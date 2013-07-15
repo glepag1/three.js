@@ -1,4 +1,6 @@
-Sidebar.Material = function ( signals ) {
+Sidebar.Material = function ( editor ) {
+
+	var signals = editor.signals;
 
 	var materialClasses = {
 
@@ -19,8 +21,8 @@ Sidebar.Material = function ( signals ) {
 
 	var container = new UI.Panel();
 	container.setBorderTop( '1px solid #ccc' );
-	container.setDisplay( 'none' );
 	container.setPadding( '10px' );
+	container.setDisplay( 'none' );
 
 	container.add( new UI.Text().setValue( 'MATERIAL' ).setColor( '#666' ) );
 	container.add( new UI.Break(), new UI.Break() );
@@ -105,6 +107,22 @@ Sidebar.Material = function ( signals ) {
 	materialShininessRow.add( materialShininess );
 
 	container.add( materialShininessRow );
+
+	// vertex colors
+
+	var materialVertexColorsRow = new UI.Panel();
+	var materialVertexColors = new UI.Select().setOptions( {
+
+		0: 'No',
+		1: 'Face',
+		2: 'Vertex'
+
+	} ).onChange( update );
+
+	materialVertexColorsRow.add( new UI.Text( 'Vertex Colors' ).setWidth( '90px' ).setColor( '#666' ) );
+	materialVertexColorsRow.add( materialVertexColors );
+
+	container.add( materialVertexColorsRow );
 
 	// map
 
@@ -228,7 +246,11 @@ Sidebar.Material = function ( signals ) {
 
 		if ( material ) {
 
-			material.name = materialName.getValue();
+			if ( material.name !== undefined ) {
+
+				material.name = materialName.getValue();
+
+			}
 
 			if ( material instanceof materialClasses[ materialClass.getValue() ] == false ) {
 
@@ -267,6 +289,13 @@ Sidebar.Material = function ( signals ) {
 
 			}
 
+			if ( material.vertexColors !== undefined ) {
+
+				material.vertexColors = parseInt( materialVertexColors.getValue() );
+				material.needsUpdate = true;
+
+			}
+
 			if ( material.map !== undefined ) {
 
 				var mapEnabled = materialMapEnabled.getValue() === true;
@@ -275,6 +304,7 @@ Sidebar.Material = function ( signals ) {
 
 					material.map = mapEnabled ? materialMap.getValue() : null;
 					material.needsUpdate = true;
+
 					selected.geometry.buffersNeedUpdate = true;
 					selected.geometry.uvsNeedUpdate = true;
 
@@ -426,11 +456,13 @@ Sidebar.Material = function ( signals ) {
 	function updateRows() {
 
 		var properties = {
+			'name': materialNameRow,
 			'color': materialColorRow,
 			'ambient': materialAmbientRow,
 			'emissive': materialEmissiveRow,
 			'specular': materialSpecularRow,
 			'shininess': materialShininessRow,
+			'vertexColors': materialVertexColorsRow,
 			'map': materialMapRow,
 			'lightMap': materialLightMapRow,
 			'bumpMap': materialBumpMapRow,
@@ -474,7 +506,12 @@ Sidebar.Material = function ( signals ) {
 
 			var material = object.material;
 
-			materialName.setValue( material.name );
+			if ( material.name !== undefined ) {
+
+				materialName.setValue( material.name );
+
+			}
+
 			materialClass.setValue( getMaterialInstanceName( material ) );
 
 			if ( material.color !== undefined ) {
@@ -504,6 +541,12 @@ Sidebar.Material = function ( signals ) {
 			if ( material.shininess !== undefined ) {
 
 				materialShininess.setValue( material.shininess );
+
+			}
+
+			if ( material.vertexColors !== undefined ) {
+
+				materialVertexColors.setValue( material.vertexColors );
 
 			}
 

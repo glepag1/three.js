@@ -1,9 +1,10 @@
-Sidebar.Geometry = function ( signals ) {
+Sidebar.Geometry = function ( editor ) {
+
+	var signals = editor.signals;
 
 	var geometryClasses = {
 
 		"CircleGeometry": THREE.CircleGeometry,
-		"ConvexGeometry": THREE.ConvexGeometry,
 		"CubeGeometry": THREE.CubeGeometry,
 		"CylinderGeometry": THREE.CylinderGeometry,
 		"ExtrudeGeometry": THREE.ExtrudeGeometry,
@@ -26,8 +27,8 @@ Sidebar.Geometry = function ( signals ) {
 
 	var container = new UI.Panel();
 	container.setBorderTop( '1px solid #ccc' );
-	container.setDisplay( 'none' );
 	container.setPadding( '10px' );
+	container.setDisplay( 'none' );
 
 	var objectType = new UI.Text().setColor( '#666' ).setTextTransform( 'uppercase' );
 	container.add( objectType );
@@ -82,7 +83,7 @@ Sidebar.Geometry = function ( signals ) {
 
 	}
 
-	signals.objectSelected.add( function ( object ) {
+	function build( object ) {
 
 		if ( object && object.geometry ) {
 
@@ -148,17 +149,10 @@ Sidebar.Geometry = function ( signals ) {
 
 		}
 
-	} );
+	}
 
-	signals.objectChanged.add( function ( object ) {
-
-		if ( object && object.geometry ) {
-
-			updateFields( object.geometry );
-
-		}
-
-	} );
+	signals.objectSelected.add( build );
+	signals.objectChanged.add( build );
 
 	//
 

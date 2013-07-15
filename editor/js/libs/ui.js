@@ -355,26 +355,6 @@ UI.FancySelect.prototype.setOptions = function ( options ) {
 
 	scope.options = [];
 
-	var generateOptionCallback = function ( element, value ) {
-
-		return function ( event ) {
-
-			for ( var i = 0; i < scope.options.length; i ++ ) {
-
-				scope.options[ i ].style.backgroundColor = '#f0f0f0';
-
-			}
-
-			element.style.backgroundColor = '#f0f0f0';
-
-			scope.selectedValue = value;
-
-			scope.dom.dispatchEvent( changeEvent );
-
-		}
-
-	};
-
 	for ( var key in options ) {
 
 		var option = document.createElement( 'div' );
@@ -385,7 +365,13 @@ UI.FancySelect.prototype.setOptions = function ( options ) {
 		scope.dom.appendChild( option );
 
 		scope.options.push( option );
-		option.addEventListener( 'click', generateOptionCallback( option, key ), false );
+
+		option.addEventListener( 'click', function ( event ) {
+
+			scope.setValue( this.value );
+			scope.dom.dispatchEvent( changeEvent );
+
+		}, false );
 
 	}
 
@@ -401,18 +387,27 @@ UI.FancySelect.prototype.getValue = function () {
 
 UI.FancySelect.prototype.setValue = function ( value ) {
 
-	// must convert raw value into string for compatibility with UI.Select
-	// which uses string values (initialized from options keys)
-
-	var key = value ? value.toString() : value;
+	if ( typeof value === 'number' ) value = value.toString();
 
 	for ( var i = 0; i < this.options.length; i ++ ) {
 
 		var element = this.options[ i ];
 
-		if ( element.value === key ) {
+		if ( element.value === value ) {
 
 			element.style.backgroundColor = '#f0f0f0';
+
+			// scroll into view
+
+			var y = i * element.clientHeight;
+			var scrollTop = this.dom.scrollTop;
+			var domHeight = this.dom.clientHeight;
+
+			if ( y < scrollTop || y > scrollTop + domHeight ) {
+
+				this.dom.scrollTop = y;
+
+			}
 
 		} else {
 

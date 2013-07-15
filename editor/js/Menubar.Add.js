@@ -1,4 +1,4 @@
-Menubar.Add = function ( signals ) {
+Menubar.Add = function ( editor ) {
 
 	var container = new UI.Panel();
 	container.setClass( 'menu' );
@@ -36,12 +36,14 @@ Menubar.Add = function ( signals ) {
 		var heightSegments = 1;
 
 		var geometry = new THREE.PlaneGeometry( width, height, widthSegments, heightSegments );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var material = new THREE.MeshLambertMaterial();
+		var mesh = new THREE.Mesh( geometry, material );
 		mesh.name = 'Plane ' + ( ++ meshCount );
 
 		mesh.rotation.x = - Math.PI/2;
 
-		signals.objectAdded.dispatch( mesh );
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -62,11 +64,11 @@ Menubar.Add = function ( signals ) {
 		var depthSegments = 1;
 
 		var geometry = new THREE.CubeGeometry( width, height, depth, widthSegments, heightSegments, depthSegments );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = 'Cube ' + ( ++ meshCount );
 
-		signals.objectAdded.dispatch( mesh );
-
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -86,10 +88,11 @@ Menubar.Add = function ( signals ) {
 		var openEnded = false;
 
 		var geometry = new THREE.CylinderGeometry( radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = 'Cylinder ' + ( ++ meshCount );
 
-		signals.objectAdded.dispatch( mesh );
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -106,10 +109,11 @@ Menubar.Add = function ( signals ) {
 		var heightSegments = 16;
 
 		var geometry = new THREE.SphereGeometry( radius, widthSegments, heightSegments );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = 'Sphere ' + ( ++ meshCount );
 
-		signals.objectAdded.dispatch( mesh );
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -125,10 +129,11 @@ Menubar.Add = function ( signals ) {
 		var detail = 2;
 
 		var geometry = new THREE.IcosahedronGeometry ( radius, detail );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = 'Icosahedron ' + ( ++ meshCount );
 
-		signals.objectAdded.dispatch( mesh );
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -147,10 +152,11 @@ Menubar.Add = function ( signals ) {
 		var arc = Math.PI * 2;
 
 		var geometry = new THREE.TorusGeometry( radius, tube, radialSegments, tubularSegments, arc );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = 'Torus ' + ( ++ meshCount );
 
-		signals.objectAdded.dispatch( mesh );
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -171,10 +177,11 @@ Menubar.Add = function ( signals ) {
 		var heightScale = 1;
 
 		var geometry = new THREE.TorusKnotGeometry( radius, tube, radialSegments, tubularSegments, p, q, heightScale );
-		var mesh = new THREE.Mesh( geometry, createDummyMaterial( geometry ) );
+		var mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial() );
 		mesh.name = 'TorusKnot ' + ( ++ meshCount );
 
-		signals.objectAdded.dispatch( mesh );
+		editor.addObject( mesh );
+		editor.select( mesh );
 
 	} );
 	options.add( option );
@@ -197,7 +204,8 @@ Menubar.Add = function ( signals ) {
 		var light = new THREE.PointLight( color, intensity, distance );
 		light.name = 'PointLight ' + ( ++ lightCount );
 
-		signals.objectAdded.dispatch( light );
+		editor.addObject( light );
+		editor.select( light );
 
 	} );
 	options.add( option );
@@ -221,7 +229,8 @@ Menubar.Add = function ( signals ) {
 
 		light.position.set( 0, 1, 0 ).multiplyScalar( 200 );
 
-		signals.objectAdded.dispatch( light );
+		editor.addObject( light );
+		editor.select( light );
 
 	} );
 	options.add( option );
@@ -242,7 +251,8 @@ Menubar.Add = function ( signals ) {
 
 		light.position.set( 1, 1, 1 ).multiplyScalar( 200 );
 
-		signals.objectAdded.dispatch( light );
+		editor.addObject( light );
+		editor.select( light );
 
 	} );
 	options.add( option );
@@ -263,7 +273,8 @@ Menubar.Add = function ( signals ) {
 
 		light.position.set( 1, 1, 1 ).multiplyScalar( 200 );
 
-		signals.objectAdded.dispatch( light );
+		editor.addObject( light );
+		editor.select( light );
 
 	} );
 	options.add( option );
@@ -280,18 +291,13 @@ Menubar.Add = function ( signals ) {
 		var light = new THREE.AmbientLight( color );
 		light.name = 'AmbientLight ' + ( ++ lightCount );
 
-		signals.objectAdded.dispatch( light );
+		editor.addObject( light );
+		editor.select( light );
 
 	} );
 	options.add( option );
 
 	//
-
-	function createDummyMaterial() {
-
-		return new THREE.MeshPhongMaterial();
-
-	};
 
 	return container;
 

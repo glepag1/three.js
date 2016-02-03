@@ -1,5 +1,5 @@
 /**
- * @author bhouston / http://exocortex.com
+ * @author bhouston / http://clara.io
  * @author mrdoob / http://mrdoob.com/
  */
 
@@ -20,23 +20,46 @@ THREE.Sphere.prototype = {
 		this.radius = radius;
 
 		return this;
+
 	},
 
-	setFromCenterAndPoints: function ( center, points ) {
+	setFromPoints: function () {
 
-		var maxRadiusSq = 0;
+		var box = new THREE.Box3();
 
-		for ( var i = 0, il = points.length; i < il; i ++ ) {
+		return function ( points, optionalCenter ) {
 
-			var radiusSq = center.distanceToSquared( points[ i ] );
-			maxRadiusSq = Math.max( maxRadiusSq, radiusSq );
+			var center = this.center;
 
-		}
+			if ( optionalCenter !== undefined ) {
 
-		this.center = center;
-		this.radius = Math.sqrt( maxRadiusSq );
+				center.copy( optionalCenter );
 
-		return this;
+			} else {
+
+				box.setFromPoints( points ).center( center );
+
+			}
+
+			var maxRadiusSq = 0;
+
+			for ( var i = 0, il = points.length; i < il; i ++ ) {
+
+				maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( points[ i ] ) );
+
+			}
+
+			this.radius = Math.sqrt( maxRadiusSq );
+
+			return this;
+
+		};
+
+	}(),
+
+	clone: function () {
+
+		return new this.constructor().copy( this );
 
 	},
 
@@ -124,12 +147,6 @@ THREE.Sphere.prototype = {
 	equals: function ( sphere ) {
 
 		return sphere.center.equals( this.center ) && ( sphere.radius === this.radius );
-
-	},
-
-	clone: function () {
-
-		return new THREE.Sphere().copy( this );
 
 	}
 

@@ -1,98 +1,137 @@
 /**
  * @author mrdoob / http://mrdoob.com/
- * @author Larry Battle / http://bateru.com/news
  */
 
-var THREE = THREE || { REVISION: '58' };
+var THREE = { REVISION: '73' };
 
-self.console = self.console || {
+//
 
-	info: function () {},
-	log: function () {},
-	debug: function () {},
-	warn: function () {},
-	error: function () {}
+if ( typeof define === 'function' && define.amd ) {
 
-};
+		define( 'three', THREE );
 
-self.Int32Array = self.Int32Array || Array;
-self.Float32Array = self.Float32Array || Array;
+} else if ( 'undefined' !== typeof exports && 'undefined' !== typeof module ) {
 
-String.prototype.trim = String.prototype.trim || function () {
+		module.exports = THREE;
 
-	return this.replace( /^\s+|\s+$/g, '' );
+}
 
-};
 
-// based on https://github.com/documentcloud/underscore/blob/bf657be243a075b5e72acc8a83e6f12a564d8f55/underscore.js#L767
-THREE.extend = function ( obj, source ) {
+// polyfills
 
-	// ECMAScript5 compatibility based on: http://www.nczonline.net/blog/2012/12/11/are-your-mixins-ecmascript-5-compatible/
-	if ( Object.keys ) {
+if ( self.requestAnimationFrame === undefined || self.cancelAnimationFrame === undefined ) {
 
-		var keys = Object.keys( source );
+	// Missing in Android stock browser.
 
-		for (var i = 0, il = keys.length; i < il; i++) {
+	( function () {
 
-			var prop = keys[i];
-			Object.defineProperty( obj, prop, Object.getOwnPropertyDescriptor( source, prop ) );
+		var lastTime = 0;
+		var vendors = [ 'ms', 'moz', 'webkit', 'o' ];
+
+		for ( var x = 0; x < vendors.length && ! self.requestAnimationFrame; ++ x ) {
+
+			self.requestAnimationFrame = self[ vendors[ x ] + 'RequestAnimationFrame' ];
+			self.cancelAnimationFrame = self[ vendors[ x ] + 'CancelAnimationFrame' ] || self[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
 
 		}
 
-	} else {
+		if ( self.requestAnimationFrame === undefined && self.setTimeout !== undefined ) {
 
-		var safeHasOwnProperty = {}.hasOwnProperty;
+			self.requestAnimationFrame = function ( callback ) {
 
-		for ( var prop in source ) {
+				var currTime = Date.now(), timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
+				var id = self.setTimeout( function () {
 
-			if ( safeHasOwnProperty.call( source, prop ) ) {
+					callback( currTime + timeToCall );
 
-				obj[prop] = source[prop];
+				}, timeToCall );
+				lastTime = currTime + timeToCall;
+				return id;
 
-			}
+			};
 
 		}
 
-	}
+		if ( self.cancelAnimationFrame === undefined && self.clearTimeout !== undefined ) {
 
-	return obj;
+			self.cancelAnimationFrame = function ( id ) {
 
-};
+				self.clearTimeout( id );
 
-// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+			};
 
-// requestAnimationFrame polyfill by Erik Möller
-// fixes from Paul Irish and Tino Zijdel
+		}
 
-( function () {
+	} )();
 
-	var lastTime = 0;
-	var vendors = [ 'ms', 'moz', 'webkit', 'o' ];
+}
 
-	for ( var x = 0; x < vendors.length && !window.requestAnimationFrame; ++ x ) {
+//
 
-		window.requestAnimationFrame = window[ vendors[ x ] + 'RequestAnimationFrame' ];
-		window.cancelAnimationFrame = window[ vendors[ x ] + 'CancelAnimationFrame' ] || window[ vendors[ x ] + 'CancelRequestAnimationFrame' ];
+if ( self.performance === undefined ) {
 
-	}
+	self.performance = {};
 
-	if ( window.requestAnimationFrame === undefined ) {
+}
 
-		window.requestAnimationFrame = function ( callback ) {
+if ( self.performance.now === undefined ) {
 
-			var currTime = Date.now(), timeToCall = Math.max( 0, 16 - ( currTime - lastTime ) );
-			var id = window.setTimeout( function() { callback( currTime + timeToCall ); }, timeToCall );
-			lastTime = currTime + timeToCall;
-			return id;
+	( function () {
 
-		};
+		var start = Date.now();
 
-	}
+		self.performance.now = function () {
 
-	window.cancelAnimationFrame = window.cancelAnimationFrame || function ( id ) { window.clearTimeout( id ) };
+			return Date.now() - start;
 
-}() );
+		}
+
+	} )();
+
+}
+
+//
+
+if ( Number.EPSILON === undefined ) {
+
+	Number.EPSILON = Math.pow( 2, -52 );
+
+}
+
+//
+
+if ( Math.sign === undefined ) {
+
+	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sign
+
+	Math.sign = function ( x ) {
+
+		return ( x < 0 ) ? - 1 : ( x > 0 ) ? 1 : + x;
+
+	};
+
+}
+
+if ( Function.prototype.name === undefined && Object.defineProperty !== undefined ) {
+
+	// Missing in IE9-11.
+	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/name
+
+	Object.defineProperty( Function.prototype, 'name', {
+
+		get: function () {
+
+			return this.toString().match( /^\s*function\s*(\S*)\s*\(/ )[ 1 ];
+
+		}
+
+	} );
+
+}
+
+// https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent.button
+
+THREE.MOUSE = { LEFT: 0, MIDDLE: 1, RIGHT: 2 };
 
 // GL STATE CONSTANTS
 
@@ -120,7 +159,6 @@ THREE.DoubleSide = 2;
 
 // shading
 
-THREE.NoShading = 0;
 THREE.FlatShading = 1;
 THREE.SmoothShading = 2;
 
@@ -141,11 +179,13 @@ THREE.CustomBlending = 5;
 
 // custom blending equations
 // (numbers start from 100 not to clash with other
-//  mappings to OpenGL constants defined in Texture.js)
+// mappings to OpenGL constants defined in Texture.js)
 
 THREE.AddEquation = 100;
 THREE.SubtractEquation = 101;
 THREE.ReverseSubtractEquation = 102;
+THREE.MinEquation = 103;
+THREE.MaxEquation = 104;
 
 // custom blending destination factors
 
@@ -170,6 +210,17 @@ THREE.DstColorFactor = 208;
 THREE.OneMinusDstColorFactor = 209;
 THREE.SrcAlphaSaturateFactor = 210;
 
+// depth modes
+
+THREE.NeverDepth = 0;
+THREE.AlwaysDepth = 1;
+THREE.LessDepth = 2;
+THREE.LessEqualDepth = 3;
+THREE.EqualDepth = 4;
+THREE.GreaterEqualDepth = 5;
+THREE.GreaterDepth = 6;
+THREE.NotEqualDepth = 7;
+
 
 // TEXTURE CONSTANTS
 
@@ -179,13 +230,15 @@ THREE.AddOperation = 2;
 
 // Mapping modes
 
-THREE.UVMapping = function () {};
+THREE.UVMapping = 300;
 
-THREE.CubeReflectionMapping = function () {};
-THREE.CubeRefractionMapping = function () {};
+THREE.CubeReflectionMapping = 301;
+THREE.CubeRefractionMapping = 302;
 
-THREE.SphericalReflectionMapping = function () {};
-THREE.SphericalRefractionMapping = function () {};
+THREE.EquirectangularReflectionMapping = 303;
+THREE.EquirectangularRefractionMapping = 304;
+
+THREE.SphericalReflectionMapping = 305;
 
 // Wrapping modes
 
@@ -211,6 +264,7 @@ THREE.UnsignedShortType = 1012;
 THREE.IntType = 1013;
 THREE.UnsignedIntType = 1014;
 THREE.FloatType = 1015;
+THREE.HalfFloatType = 1025;
 
 // Pixel types
 
@@ -226,18 +280,66 @@ THREE.RGBFormat = 1020;
 THREE.RGBAFormat = 1021;
 THREE.LuminanceFormat = 1022;
 THREE.LuminanceAlphaFormat = 1023;
+// THREE.RGBEFormat handled as THREE.RGBAFormat in shaders
+THREE.RGBEFormat = THREE.RGBAFormat; //1024;
 
-// Compressed texture formats
+// DDS / ST3C Compressed texture formats
 
 THREE.RGB_S3TC_DXT1_Format = 2001;
 THREE.RGBA_S3TC_DXT1_Format = 2002;
 THREE.RGBA_S3TC_DXT3_Format = 2003;
 THREE.RGBA_S3TC_DXT5_Format = 2004;
 
-/*
-// Potential future PVRTC compressed texture formats
+
+// PVRTC compressed texture formats
+
 THREE.RGB_PVRTC_4BPPV1_Format = 2100;
 THREE.RGB_PVRTC_2BPPV1_Format = 2101;
 THREE.RGBA_PVRTC_4BPPV1_Format = 2102;
 THREE.RGBA_PVRTC_2BPPV1_Format = 2103;
-*/
+
+// Loop styles for AnimationAction
+
+THREE.LoopOnce = 2200;
+THREE.LoopRepeat = 2201;
+THREE.LoopPingPong = 2202;
+
+// DEPRECATED
+
+THREE.Projector = function () {
+
+	console.error( 'THREE.Projector has been moved to /examples/js/renderers/Projector.js.' );
+
+	this.projectVector = function ( vector, camera ) {
+
+		console.warn( 'THREE.Projector: .projectVector() is now vector.project().' );
+		vector.project( camera );
+
+	};
+
+	this.unprojectVector = function ( vector, camera ) {
+
+		console.warn( 'THREE.Projector: .unprojectVector() is now vector.unproject().' );
+		vector.unproject( camera );
+
+	};
+
+	this.pickingRay = function ( vector, camera ) {
+
+		console.error( 'THREE.Projector: .pickingRay() is now raycaster.setFromCamera().' );
+
+	};
+
+};
+
+THREE.CanvasRenderer = function () {
+
+	console.error( 'THREE.CanvasRenderer has been moved to /examples/js/renderers/CanvasRenderer.js' );
+
+	this.domElement = document.createElement( 'canvas' );
+	this.clear = function () {};
+	this.render = function () {};
+	this.setClearColor = function () {};
+	this.setSize = function () {};
+
+};

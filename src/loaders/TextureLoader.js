@@ -2,9 +2,9 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-THREE.TextureLoader = function () {
+THREE.TextureLoader = function ( manager ) {
 
-	this.crossOrigin = null;
+	this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 
 };
 
@@ -12,35 +12,32 @@ THREE.TextureLoader.prototype = {
 
 	constructor: THREE.TextureLoader,
 
-	addEventListener: THREE.EventDispatcher.prototype.addEventListener,
-	hasEventListener: THREE.EventDispatcher.prototype.hasEventListener,
-	removeEventListener: THREE.EventDispatcher.prototype.removeEventListener,
-	dispatchEvent: THREE.EventDispatcher.prototype.dispatchEvent,
+	load: function ( url, onLoad, onProgress, onError ) {
 
-	load: function ( url ) {
+		var texture = new THREE.Texture();
 
-		var scope = this;
+		var loader = new THREE.ImageLoader( this.manager );
+		loader.setCrossOrigin( this.crossOrigin );
+		loader.load( url, function ( image ) {
 
-		var image = new Image();
-
-		image.addEventListener( 'load', function () {
-
-			var texture = new THREE.Texture( image );
+			texture.image = image;
 			texture.needsUpdate = true;
 
-			scope.dispatchEvent( { type: 'load', content: texture } );
+			if ( onLoad !== undefined ) {
 
-		}, false );
+				onLoad( texture );
 
-		image.addEventListener( 'error', function () {
+			}
 
-			scope.dispatchEvent( { type: 'error', message: 'Couldn\'t load URL [' + url + ']' } );
+		}, onProgress, onError );
 
-		}, false );
+		return texture;
 
-		if ( scope.crossOrigin ) image.crossOrigin = scope.crossOrigin;
+	},
 
-		image.src = url;
+	setCrossOrigin: function ( value ) {
+
+		this.crossOrigin = value;
 
 	}
 
